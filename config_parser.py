@@ -1,32 +1,57 @@
 import configparser
 import json
-from flask import Flask, jsonify
+import sqlite3
+import os
 
-app = Flask(__name__)
-config_data = {}
-
-try:
+def parse_config(file_path):
     config = configparser.ConfigParser()
-    config.read('config.ini')  # Make sure config.ini exists in the same directory
 
-    for section in config.sections():
-        config_data[section] = {}
-        for key, value in config.items(section):
-            config_data[section][key] = value
+    if not os.path.exists(file_path):
+        raise FileNotFoundError("Configuration file not found!")
 
-    # Save as JSON locally (simulating database storage)
-    with open('config.json', 'w') as f:
-        json.dump(config_data, f, indent=4)
+    config.read(file_path)
 
-except FileNotFoundError:
-    print("Configuration file not found!")
-except Exception as e:
-    print(f"An error occurred while reading the configuration: {e}")
+    result = {
+        "Database": {
+            "host": config.get("Database", "host"),
+            "port": config.get("Database", "port"),
+            "username": config.get("Database", "username"),
+            "password": config.get("Database", "password")
+        },
+        "Server": {
+            "address": config.get("Server", "address"),
+            "port": config.get("Server", "port")
+        }
+    }
+    return result
 
-@app.route('/config', methods=['GET'])
-def get_config():
-    return jsonify(config_data)
+
+# -------- SAVE TO DATABASE (SQLite Example) --------
+def save_to_db(data):
+    conn = sqlite3.connect("config_data.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS config (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            json_data TEXT
+        )
+    """)
+
+    cursor.execute("INSERT INTO config (json_data) VALUES (?)", (json.dumps(data),))
+    conn.commit()
+    conn.close()
+
 
 if __name__ == "__main__":
-    print("Starting Flask API on http://127.0.0.1:5000/config")
-    app.run(debug=True)
+    file_path = "config.ini"  # make sure config.ini is in same folder
+    try:
+        parsed_data = parse_config(file_path)
+        print("\nParsed Configuration:\n", parsed_data)
+
+        save_to_db(parsed_data)
+        print("\nData saved to SQLite database successfully!")
+
+    except Exception as e:
+        print("Error:", e)
+
