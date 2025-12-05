@@ -2,9 +2,11 @@
 
 This repository contains Python scripts for various DevOps tasks, including password strength checking, CPU monitoring, configuration file parsing, and backup automation.  
 
-Q1: Password Strength Checker**
+---
 
-**File:** 'Pass_Check.py'
+## **Q1: Password Strength Checker**
+
+**File:** `password_checker.py`
 
 **Description:**  
 Checks if a user-provided password is strong based on the following criteria:
@@ -13,8 +15,7 @@ Checks if a user-provided password is strong based on the following criteria:
 - Contains at least one digit (0-9)
 - Contains at least one special character (e.g., !, @, #, $)
 
-**Usage:**
-```bash
+
 python Pass_Check.py
 
 
